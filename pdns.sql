@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 5.6.33, for debian-linux-gnu (x86_64)
+-- MySQL dump 10.13  Distrib 5.7.19, for Linux (x86_64)
 --
 -- Host: localhost    Database: pdns
 -- ------------------------------------------------------
--- Server version	5.6.33-0ubuntu0.14.04.1-log
+-- Server version	5.7.18-0ubuntu0.16.04.1-log
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -32,6 +32,59 @@ CREATE TABLE `ar_internal_metadata` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `comments`
+--
+
+DROP TABLE IF EXISTS `comments`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `comments` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `domain_id` int(11) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `type` varchar(10) NOT NULL,
+  `modified_at` int(11) NOT NULL,
+  `account` varchar(40) NOT NULL,
+  `comment` varchar(64000) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `cryptokeys`
+--
+
+DROP TABLE IF EXISTS `cryptokeys`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `cryptokeys` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `domain_id` int(11) NOT NULL,
+  `flags` int(11) NOT NULL,
+  `active` tinyint(1) DEFAULT NULL,
+  `content` text,
+  PRIMARY KEY (`id`),
+  KEY `domainidindex` (`domain_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `domainmetadata`
+--
+
+DROP TABLE IF EXISTS `domainmetadata`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `domainmetadata` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `domain_id` int(11) NOT NULL,
+  `kind` varchar(32) DEFAULT NULL,
+  `content` text,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `domains`
 --
 
@@ -53,8 +106,9 @@ CREATE TABLE `domains` (
   `ordername` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `index_domains_on_name` (`name`) USING BTREE,
+  UNIQUE KEY `name_index` (`name`),
   KEY `index_domains_on_ordername` (`name_unicode`)
-) ENGINE=InnoDB AUTO_INCREMENT=38919 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=38436 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -91,15 +145,20 @@ CREATE TABLE `records` (
   `change_date` int(11) DEFAULT NULL,
   `name_unicode` varchar(255) DEFAULT NULL,
   `auth` tinyint(1) DEFAULT NULL,
-  `created_at` datetime NOT NULL,
-  `updated_at` datetime NOT NULL,
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
   `ordername` varchar(255) DEFAULT NULL,
+  `disabled` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
-  KEY `index_records_on_domain_id` (`domain_id`) USING BTREE,
   KEY `index_records_on_name_and_type` (`name`,`type`) USING BTREE,
   KEY `index_records_on_name` (`name`) USING BTREE,
-  KEY `index_records_on_ordername` (`name_unicode`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=35087364 DEFAULT CHARSET=utf8;
+  KEY `index_records_on_ordername` (`name_unicode`) USING BTREE,
+  KEY `rec_name_index` (`name`),
+  KEY `nametype_index` (`name`,`type`),
+  KEY `domain_id` (`domain_id`),
+  KEY `recordorder` (`domain_id`,`ordername`),
+  CONSTRAINT `records_ibfk_1` FOREIGN KEY (`domain_id`) REFERENCES `domains` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=34387699 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -127,7 +186,23 @@ CREATE TABLE `tags` (
   `name` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `index_tags_on_name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=1820 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1812 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `tsigkeys`
+--
+
+DROP TABLE IF EXISTS `tsigkeys`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `tsigkeys` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) DEFAULT NULL,
+  `algorithm` varchar(50) DEFAULT NULL,
+  `secret` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -139,4 +214,4 @@ CREATE TABLE `tags` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-09-01 11:14:32
+-- Dump completed on 2017-09-01 11:17:05
