@@ -1,8 +1,6 @@
 show tables;
 
 ALTER TABLE records ADD disabled TINYINT(1) DEFAULT 0;
-ALTER TABLE records ADD ordername VARCHAR(255) BINARY DEFAULT NULL;
-ALTER TABLE records ADD auth TINYINT(1) DEFAULT 1;
  
 CREATE INDEX recordorder ON records (domain_id, ordername);
  
