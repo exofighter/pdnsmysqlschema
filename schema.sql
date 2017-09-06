@@ -53,5 +53,21 @@ CREATE TABLE comments (
 CREATE INDEX comments_domain_id_idx ON comments (domain_id);
 CREATE INDEX comments_name_type_idx ON comments (name, type);
 CREATE INDEX comments_order_idx ON comments (domain_id, modified_at);
- 
+
+
+SET @old_sql_mode := @@sql_mode ;
+
+-- derive a new value by removing NO_ZERO_DATE and NO_ZERO_IN_DATE
+SET @new_sql_mode := @old_sql_mode ;
+SET @new_sql_mode := TRIM(BOTH ',' FROM REPLACE(CONCAT(',',@new_sql_mode,','),',NO_ZERO_DATE,'  ,','));
+SET @new_sql_mode := TRIM(BOTH ',' FROM REPLACE(CONCAT(',',@new_sql_mode,','),',NO_ZERO_IN_DATE,',','));
+SET @@sql_mode := @new_sql_mode ;
+
+update records set created_at = '1970-01-02 00:00:00' WHERE created_at = '0000-00-00 00:00:00'; 
+alter table records modify created_at datetime DEFAULT CURRENT_TIMESTAMP;
+
+-- when we are done with required operations, we can revert back
+-- to the original sql_mode setting, from the value we saved
+SET @@sql_mode := @old_sql_mode ;
+
 show tables;
